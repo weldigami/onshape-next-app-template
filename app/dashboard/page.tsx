@@ -3,47 +3,46 @@
 import { useSession, signOut } from "next-auth/react";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import axios from "axios";
-import { toast } from "react-toastify";
+import { fetchOnshapeUser } from "@/lib/onshape";
+import { showToast } from "@/components/Toast";
 
 export default function Dashboard() {
-  // Retrieve user session and authentication status
+  // Get session data and authentication status
   const { data: session, status } = useSession();
   const router = useRouter();
   const [userData, setUserData] = useState(null);
 
   useEffect(() => {
-    // Redirect to home page if user is not authenticated
+    // Redirect to home if user is not authenticated
     if (status === "unauthenticated") {
       router.push("/");
       return;
     }
 
-    // Fetch user session info from Onshape API if authenticated
+    // Fetch Onshape user data if authenticated
     if (status === "authenticated" && session?.user?.accessToken) {
-      axios
-        .get("https://cad.onshape.com/api/users/sessioninfo", {
-          headers: { Authorization: `Bearer ${session.user.accessToken}` },
+      fetchOnshapeUser(session.user.accessToken)
+        .then((data) => {
+          setUserData(data);
+          showToast("Onshape data loaded!", "success"); // Success notification
         })
-        .then((res) => {
-          setUserData(res.data);
-          toast.success("Onshape data loaded!");
-        })
-        .catch(() => toast.error("Failed to fetch Onshape data"));
+        .catch(() => showToast("Failed to fetch Onshape data", "error")); // Error notification
     }
   }, [status, session, router]);
 
-  // Show loading message while authentication status is being determined
+  // Show loading state while checking authentication
   if (status === "loading") return <p>Loading...</p>;
-  // Return null if session is not available
   if (!session) return null;
 
   return (
     <div>
+      {/* Display user name if available, otherwise default to "User" */}
       <h1>Welcome, {session.user?.name || "User"}!</h1>
-      {/* Display retrieved user data in a formatted JSON block */}
+      
+      {/* Display fetched Onshape user data */}
       <pre>{JSON.stringify(userData, null, 2)}</pre>
-      {/* Logout button to sign the user out */}
+      
+      {/* Logout button */}
       <button onClick={() => signOut()}>Sign Out</button>
     </div>
   );

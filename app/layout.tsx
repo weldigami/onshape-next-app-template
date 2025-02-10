@@ -1,14 +1,20 @@
 "use client";
 
 import { SessionProvider } from "next-auth/react";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
       <body>
-        {/* Wrap the application with SessionProvider to manage authentication state */}
+        {/* Provides session context for authentication throughout the app */}
         <SessionProvider>
-          {children} {/* Render child components within the layout */}
+          {/* Toast notifications container with predefined settings */}
+          <ToastContainer position="top-right" autoClose={5000} hideProgressBar={false} />
+          
+          {/* Render child components inside the layout */}
+          {children}
         </SessionProvider>
       </body>
     </html>
