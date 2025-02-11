@@ -1,15 +1,22 @@
+// app/page.tsx
 "use client";
 
-import { signIn } from "next-auth/react";
+import { useSession } from "next-auth/react";
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
 
 export default function Home() {
-  return (
-    <div>
-      {/* Display the main heading of the application */}
-      <h1>Welcome to OnShape Plugin</h1>
-      
-      {/* Button to trigger the OnShape authentication process */}
-      <button onClick={() => signIn("onshape")}>Sign in with OnShape</button>
-    </div>
-  );
+  const { data: session, status } = useSession();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (status === "loading") return; // Wait until session is loaded
+    if (!session) {
+      router.push("https://oauth.onshape.com/oauth/signin");
+    } else {
+      router.push("/dashboard");
+    }
+  }, [session, status, router]);
+
+  return <p>Redirecting...</p>;
 }
